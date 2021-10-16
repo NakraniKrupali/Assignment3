@@ -1,11 +1,5 @@
 var rs = require("readline-sync")
-let chalk = require('chalk')
-let jsonbase = require('jsonbase.com')
-
-// Replace this token with your token (any random string)
-let TOKEN = process.env.TOKEN
-
-let store = jsonbase(TOKEN)
+const chalk = require("chalk")
 
 let log = console.log
 
@@ -15,131 +9,89 @@ let red = chalk.bold.red
 let cyan = chalk.bold.cyan
 let yellow = chalk.bold.yellow
 let title = chalk.black.bold.bgYellow
+let inverse = chalk.inverse
 
-var name = ""
-var score = 0
-var questionList = []
-var scoreboard = []
+var score = 0;
+var highscore = 15;
 
-begin()
+let questions = [
+  {
+    no: '1',
+    question: `Who penned the lyrics to the songs from "Dilwale Dulhania Le Jayenge"?`,
+    A: 'R D Burman',
+    B: 'Anand Bakshi',
+    C: 'Cliff Richards',
+    answer: 'b',
+  },
+  {
+    no: '2',
+    question: `Who was the composer of "Kuch Kuch Hota Hai"?`,
+    A: 'Neil Sedaka',
+    B: 'O P Nayyar',
+    C: 'Jatin-Lalit',
+    answer: 'c',
+  },
+  {
+    no: '3',
+    question: `The first song, "Chali Aayee", is sung by whom?`,
+    A: 'Neil Sedaka',
+    B: 'Stevie Wonder',
+    C: 'Chitra and KK',
+    answer: 'c',
+  },
+  {
+    no: '4',
+    question: `Which of these is a song from the movie "Veer-Zaara"?`,
+    A: 'Main Yahaan Hoon',
+    B: 'Chup Chup Ke',
+    C: 'Silsila Ye Chahaat Ka',
+    answer: 'a',
+  },
+  {
+    no: '5',
+    question: `'Mughal-E-Azam' was one of the greatest films made in Bollywood, featuring many hit songs. Who was the music director of this film?`,
+    A: 'Elvis Presley',
+    B: 'Naushad',
+    C: 'Anu Malik',
+    answer: 'b',
+  },
+];
 
-function begin() {
-  (async function () {
-    // Read Scoreboard
-    await store.read('scoreboard').then( resp => {
-      scoreboard = resp.data
-      
-      log(cyan("Welcome to the game:"), yellow("How Well Do You Know India?"))
-      // Read QuestionList
-      store.read('questionList').then( resp => {
-        questionList = resp.data
-      
-        // Start game
-        startGame()  
-      })
-    })
-  })()
-}
+log(cyan("Welcome to the..."), title("Bollywood Trivia!\n"))
+let user = rs.question("Enter Your Name : ")
+log(green(`Hello ${user}`))
 
-function startGame() {
-  // Get the name of the user
-  name = rs.question(blueBright("\nWhat is your name? "))
-  // Greet and instruct user
-  log(green(`Hello ${name}!`))
+log(blueBright("\nA Quiz from our favourite music industry..."))
+log("\nThere will be 5 questions.")
+log(green("+5"), "points for correct answer.", red("-2"), "points for wrong answer.\n")
 
-  log("\nThere will be 10 questions.\nAnswer them with", green("y (for yes)"), "or", red("n (for no)"), "\n")
-  log(cyan("+5 points for correct answer. -2 for wrong answer.\n"))
+for (q of questions) {
+  log(yellow(q.no + ': ' + q.question));
+  log(cyan('A: ' + q.A));
+  log(cyan('B: ' + q.B));
+  log(cyan('C: ' + q.C));
 
-  // Get 5 random questions from the pool
-  let randomQuestions5 = questionList.sort(() => .5 - Math.random()).slice(0, 10)
+  //input answer
+  var ans = rs.question('Answer : ');
 
-  // Process all questions one by one
-  for (q of randomQuestions5) {
-    let isCorrect = askQuestion(q.question, q.answer)
-    if (isCorrect) {
-      // Intimate user if his answer is correct
-      log(`Your answer is ${green(isCorrect)}, current score is ${green(score)}`)
-    } else {
-      // Intimate user if his answer is incorrect
-      log(`Your answer is ${red(isCorrect)}, current score is ${red(score)}`)
-    }
-    // Give detail about the answer for insight
-    log(cyan("Detail:"), `\n${q.detail} \n`)
-  }
-
-  // Conclude with final score and greetings
-  log(`Final score: ${green(score)} / 50`)
-  log(green("Thank you for playing!"))
-
-  compareScore()
-}
-
-// asks a question to the user and returns true or false
-function askQuestion(ques, correctAnswer) {
-  if ( rs.keyInYNStrict(yellow(ques)) ) {
-    return checkAnswer("yes", correctAnswer)
+  //compare answer
+  if (ans.toLowerCase() === q.answer.toLowerCase()) {
+    log(green("\n+5"), "Your answer is", green("correct"), ".");
+    score += 5;
+    log("Your current score is", green(score), "\n");
   } else {
-    return checkAnswer("no", correctAnswer)
+    log(red("+2"), "Your answer is", red("incorrect"), ".");
+    score -= 2;
+    log("Your current score is", red(score), "\n");
   }
 }
 
-// compares user's answer with correct answer and returns true or false back to askQuestion()
-function checkAnswer(ans, correctAnswer) {
-  if (ans.toLowerCase() === correctAnswer.toLowerCase()) {
-    score+=5
-    return true
-  } else {
-    score-=2
-    return false
-  }
+
+if (score > highscore) {
+  log(green("Congratulation..!You Beat the best score."))
+} else {
+  log(red("You couldn't beat the highscore. Better luck next time!\n"))
 }
 
-// Compares the current score with existing one to check if there is a highscore and updates the score if we do
-function compareScore() {
-  // Filter the players having score lower than current score in flag array
-  let flag = scoreboard.filter( s => parseInt(s.score) <= parseInt(score) )
-
-  // If there are any such players then the current score has beaten them and we have a highscore
-  if (flag.length > 0) {
-    if (scoreboard.length === 5) {
-      scoreboard.sort(function(a, b) {
-        return b.score - a.score;
-      })
-      scoreboard.pop()
-    }
-    
-    let newScorer = {"name": name, "score": score}
-    scoreboard.push(newScorer)
-
-    log(green("Congratulations! You have a new highscore."))
-
-    // Update new scoreboard to jsonbase
-    store.write('scoreboard',scoreboard).then( () => {
-      log("\nScoreboard updated")
-      
-      displayScoreboard()
-    })
-  } else {
-    log(red("\nYou couldn't beat the highscore. Better luck next time!"))
-
-    displayScoreboard()
-  }
-}
-
-// Logs the Scoreboard
-function displayScoreboard() {
-  scoreboard.sort(function(a, b) {
-    return b.score - a.score;
-  })
-  log(yellow("\nCurrent Scoreboard:"))
-  
-  for(player of scoreboard) {
-    log(`Name: ${green(player.name)}. Score: ${green(player.score)}`)
-  }
-}
-
-/**
- * Question credits:
- * Culture Trip: https://theculturetrip.com/asia/india/articles/12-surprising-facts-you-may-not-know-about-india/
- * ScoopWoop: https://www.scoopwhoop.com/inothernews/interesting-india/
- */
+log(yellow("Scoreboard:"))
+log('Hello ' + red(user) + ' Your final score is : ' + score)
