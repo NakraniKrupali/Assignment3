@@ -1,17 +1,19 @@
 {
-  "name": "1-Do-You-Know-India",
+  "name": "assignment3-1",
   "version": "1.0.0",
-  "description": "",
+  "description": "CLI Quiz app Yout Quiz topic should be unique (in case of repetion, the student who submitted first will be considered) You have to make it in REPL ( https://replit.com ) Ask for the name of the user Ask MCQ questions to the user (4 options) On each answer, update the score and show the correct answer if it was wrong +5 for right answer, -2 for wrong answer At the end show the final score to the user",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NakraniKrupali/Assignment3.git"
+  },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "chalk": "^4.1.0",
-    "jsonbase.com": "^1.0.3",
-    "readline-sync": "^1.4.10"
-  }
+  "bugs": {
+    "url": "https://github.com/NakraniKrupali/Assignment3/issues"
+  },
+  "homepage": "https://github.com/NakraniKrupali/Assignment3#readme"
 }
